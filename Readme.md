@@ -1,15 +1,17 @@
-# [Glitter](http://polytonic.github.io/Glitter/)
-![Screenshot](http://i.imgur.com/MDo2rsy.jpg)
+# RealTimeGraphics-engine
+## RealTimeGraphics-engine project by Blitzdude
 
-## Summary
-Glitter is a dead simple boilerplate for OpenGL, intended as a starting point for the tutorials on [learnopengl.com](http://www.learnopengl.com) and [open.gl](https://open.gl). Glitter compiles and statically links every required library, so you can jump right into doing what you probably want: how to get started with OpenGL.
+Special thanks to Github user Polytonic for his Glitter repository.  
+[Glitter](http://polytonic.github.io/Glitter/)
+
+This project uses basically the same Cmake files with the addition of imgui.
 
 ## Getting Started
-Glitter has a single dependency: [cmake](http://www.cmake.org/download/), which is used to generate platform-specific makefiles or project files. Start by cloning this repository, making sure to pass the `--recursive` flag to grab all the dependencies. If you forgot, then you can `git submodule update --init` instead.
+Basically the same as above, but no recursive call needed. Files are a bit bigger, but eh what can you do.
 
 ```bash
-git clone --recursive https://github.com/Polytonic/Glitter
-cd Glitter
+git clone 
+cd RealTimeGraphics-engine
 cd Build
 ```
 
@@ -31,9 +33,9 @@ cmake -G "Visual Studio 14 Win64" ..
 If you compile and run, you should now be at the same point as the [Hello Window](http://www.learnopengl.com/#!Getting-started/Hello-Window) or [Context Creation](https://open.gl/context) sections of the tutorials. Open [main.cpp](https://github.com/Polytonic/Glitter/blob/master/Glitter/Sources/main.cpp) on your computer and start writing code!
 
 ## Documentation
-Many people overlook how frustrating it is to install dependencies, especially in environments lacking package managers or administrative privileges. For beginners, just getting set up properly set up can be a huge challenge. Glitter is meant to help you overcome that roadblock.
+From Glitter documentation: 
 
-Glitter provides the most basic windowing example. It is a starting point, and tries very hard not to enforce any sort of directory structure. Feel free to edit the include paths in `CMakeLists.txt`. Glitter bundles most of the dependencies needed to implement a basic rendering engine. This includes:
+" Glitter provides the most basic windowing example. It is a starting point, and tries very hard not to enforce any sort of directory structure. Feel free to edit the include paths in `CMakeLists.txt`. Glitter bundles most of the dependencies needed to implement a basic rendering engine. -- "This includes:
 
 Functionality           | Library
 ----------------------- | ------------------------------------------
@@ -43,10 +45,8 @@ OpenGL Function Loader  | [glad](https://github.com/Dav1dde/glad)
 Windowing and Input     | [glfw](https://github.com/glfw/glfw)
 OpenGL Mathematics      | [glm](https://github.com/g-truc/glm)
 Texture Loading         | [stb](https://github.com/nothings/stb)
++ imgui
 
-If you started the tutorials by installing [SDL](https://www.libsdl.org/), [GLEW](https://github.com/nigels-com/glew), or [SOIL](http://www.lonesock.net/soil.html), *stop*. The libraries bundled with Glitter supersede or are functional replacements for these libraries.
-
-I have provided sample implementations of an intrusive tree mesh and shader class, if you're following along with the tutorials and need another reference point. These were used to generate the screenshot above, but will not compile out-of-the-box. I leave that exercise for the reader. :smiley:
 
 ## License
 >The MIT License (MIT)
