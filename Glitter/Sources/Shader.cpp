@@ -32,11 +32,17 @@ ShaderSource Shader::parseShader(const char * filepath)
     {
         NONE = -1,
         VERTEX = 0,
-        FRAGMNET = 1
+        FRAGMENT = 1
     };
 
     std::ifstream stream(filepath);
-
+    if (stream.fail())
+        std::cout << "file not Found: " << filepath << std::endl;
+    
+    else
+        std::cout << "Reading from file: " << filepath << std::endl;
+    
+    
     std::string line;
     std::stringstream ss[2];
     ShaderType type = ShaderType::NONE;
@@ -52,17 +58,17 @@ ShaderSource Shader::parseShader(const char * filepath)
             else if (line.find("fragment") != std::string::npos)
             {
                 // set mode fragment
-                type = ShaderType::VERTEX;
+                type = ShaderType::FRAGMENT;
 
-            }
-            else
-            {
-                ss[(int)type] << line << '\n';
             }
         }
+        else
+        {
+            ss[(int)type] << line << '\n';
+        }
+            
     }
-
-    // Return the struct
+    
     return { ss[0].str(), ss[1].str() };
 }
 
@@ -106,18 +112,28 @@ void Shader::createShaderProgram()
 {
     GLuint program = glCreateProgram();
 
-    ShaderSource sSource = parseShader(m_filepath.c_str());
-
+    ShaderSource sSource = Shader::parseShader(m_filepath.c_str());
+    
+    std::cout << "Vertex: " << sSource.vertexSource << std::endl;
+    std::cout << "Fragment" << sSource.fragmentSource << std::endl;
+    
     GLuint vs = compileShader(GL_VERTEX_SHADER, sSource.vertexSource);
     GLuint fs = compileShader(GL_FRAGMENT_SHADER, sSource.fragmentSource);
 
     glAttachShader(program, vs);
     glAttachShader(program, fs);
     glLinkProgram(program);
-    glValidateProgram(program);
     
+    // Check that the program is valid
+    glValidateProgram(program);
+    GLint status;
+    glGetProgramiv(program, GL_VALIDATE_STATUS, &status);
+    if(status == GL_FALSE)
+    {
+        std::cout << "Program not valid" << std::endl;
+        //glDeleteProgram(program);
+    }
+    m_programId = program;
     glDeleteShader(vs);
     glDeleteShader(fs);
-
-
 }

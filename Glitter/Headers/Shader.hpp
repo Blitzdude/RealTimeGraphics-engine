@@ -22,8 +22,9 @@ public:
     void use();
     void unuse();
 
+    static ShaderSource parseShader(const char* filepath);
 private:
-    ShaderSource parseShader(const char* filepath);
+    
     GLuint compileShader(GLuint type, const std::string& source);
     void createShaderProgram();
 
