@@ -4,33 +4,34 @@
 
 
 // System Headers
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
 
 // Standard Headers
 #include <cstdio>
 #include <cstdlib>
-#include <assert.h>
+#include <cassert>
+
 
 // Define an error save macro
+
 #define GLCall(x) GLClearError();\
-    x;\
+x;\
 assert(GLLogCall(#x, __FILE__, __LINE__))
 
 static void GLClearError()
 {
-    while (glGetError() == GL_NO_ERROR);
+    while (glGetError() != GL_NO_ERROR);
 }
 
 static bool GLLogCall(const char* function, const char* file, int line)
 {
     while (GLenum error = glGetError())
     {
-        std::cout << "[OpenGL Error] (" << error << ")" << function <<
-        " " << file << ":" << line <<  std::endl;
-        
+        std::cout << "[OpenGL Error]" << std::hex << error << " " << function <<
+        " " << file << ":" << line;
         return false;
     }
     return true;
@@ -57,7 +58,7 @@ static GLuint d_compileShader(GLuint type, const std::string& source)
             << std::endl;
         std::cout << message << std::endl;
 
-        GLCall(glDeleteShader(id));
+        glDeleteShader(id);
         return 0;
     }
 
@@ -70,22 +71,22 @@ static GLuint d_createShader(const std::string& vertexShader, const std::string&
     GLuint vs = d_compileShader(GL_VERTEX_SHADER, vertexShader);
     GLuint fs = d_compileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
+    GLCall(glAttachShader(program, vs));
+    GLCall(glAttachShader(program, fs));
+    GLCall(glLinkProgram(program));
     
     GLint status;
     GLCall(glGetProgramiv(program, GL_LINK_STATUS, &status));
     if ( status == GL_FALSE)
     {
         int length;
-        GLCall(glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length));
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
         char* message = (char*)alloca(length * sizeof(char));
-        GLCall(glGetShaderInfoLog(program, length, &length, message));
+        glGetShaderInfoLog(program, length, &length, message);
         std::cout << "Failed to link Program " << std::endl;
         std::cout << message << std::endl;
         
-        GLCall(glDeleteProgram(program));
+        glDeleteProgram(program);
     }
     
     GLCall(glDeleteShader(vs));
@@ -97,9 +98,10 @@ static GLuint d_createShader(const std::string& vertexShader, const std::string&
 int main(int argc, char * argv[])
 {
 
-    //bool show_demo_window = true;
-    //bool show_another_window = false;
-    //ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    bool show_demo_window = true;
+    bool show_another_window = false;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    ImVec4 uniform_color = ImVec4(0.1f, 0.2f, 0.8f, 1.0f);
 
     // Load GLFW and Create a Window
     if (!glfwInit())
@@ -110,6 +112,11 @@ int main(int argc, char * argv[])
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+    
     GLFWwindow* mWindow = glfwCreateWindow(mWidth, mHeight, "OpenGL", nullptr, nullptr);
     if (!mWindow)
     {
@@ -129,8 +136,8 @@ int main(int argc, char * argv[])
     fprintf(stderr, "OpenGL %s\n", glGetString(GL_VERSION));
 
     // Create imgui context
-    //ImGui::CreateContext();
-    //ImGui_ImplGlfwGL3_Init(mWindow, true);
+    ImGui::CreateContext();
+    ImGui_ImplGlfwGL3_Init(mWindow, true);
 
 
 
@@ -138,39 +145,39 @@ int main(int argc, char * argv[])
 
     float positions[] = {
         -0.5f, -0.5f,
-         0.0f, -0.5f,
+         0.5f, -0.5f,
          0.5f,  0.5f,
         -0.5f,  0.5f,
     };
-    
     unsigned int indices[] = {
         0, 1, 2,
         2, 3, 0
     };
-    
+    unsigned int VAO;
+    GLCall(glGenVertexArrays(1,&VAO));
+    GLCall(glBindVertexArray(VAO));
     
     unsigned int VBO;
     // Init Vertex buffer
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
-    
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+    GLCall(glGenBuffers(1, &VBO));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, VBO));
+    GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW));
     
     unsigned int IBO;
-    glGenBuffers(1, &IBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+    GLCall(glGenBuffers(1, &IBO));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO));
+    GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
     
+    GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+    GLCall(glEnableVertexAttribArray(0));
     
     // Create shader
     ShaderSource source = Shader::parseShader("../../../Glitter/Shaders/basic.shader");
     std::cout << "VERTEX:" << source.vertexSource << std::endl;
     std::cout << "FRAGMENT:" << source.fragmentSource << std::endl;
     unsigned int basicProgram = d_createShader(source.vertexSource, source.fragmentSource);
-    glUseProgram(basicProgram);
-
+    
+ 
     
     while (glfwWindowShouldClose(mWindow) == false)
     {
@@ -178,15 +185,19 @@ int main(int argc, char * argv[])
             glfwSetWindowShouldClose(mWindow, true);
 
         static float f = 0.0f;
-
+        
+        GLCall(glUseProgram(basicProgram));
+        GLCall(int location = glGetUniformLocation(basicProgram, "u_Color"));
+        assert(location != -1);
+        GLCall(glUniform4f(location, uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w));
 
         // Background Fill Color
-        glClearColor(0.1f, 0.2f, 0.4f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        GLCall(glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w));
+        GLCall(glClear(GL_COLOR_BUFFER_BIT));
         
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-        /*
-         
+        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+        
+        GLCall(glUseProgram(0));
         ImGui_ImplGlfwGL3_NewFrame();
 
         {
@@ -194,6 +205,7 @@ int main(int argc, char * argv[])
             ImGui::Text("Hello, world!");                           // Display some text (you can use a format string too)
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+            ImGui::ColorEdit4("uniform color", (float*)&uniform_color); // Edit 3 floats representing a color
 
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our windows open/close state
             ImGui::Checkbox("Another Window", &show_another_window);
@@ -205,11 +217,11 @@ int main(int argc, char * argv[])
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         }
-        */
+        
         
         // Render with imgui
-        //ImGui::Render();
-        //ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui::Render();
+        ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
         // Flip Buffers and Draw
         glfwSwapBuffers(mWindow);
