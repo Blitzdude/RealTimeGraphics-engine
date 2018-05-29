@@ -7,6 +7,7 @@
 #include "VertexArray.hpp"
 #include "Renderer.hpp"
 #include "Texture.hpp"
+#include "Camera.hpp"
 
 // System Headers
 #include <GLFW/glfw3.h>
@@ -21,6 +22,22 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void processInput(GLFWwindow *window);
+
+// camera
+Camera camera(glm::vec3(0.0f, 0.0f, -3.0f));
+float lastX = WINDOW_WIDTH / 2.0f;
+float lastY = WINDOW_HEIGHT / 2.0f;
+bool firstMouse = true;
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
+
 
 struct Cube
 {
@@ -55,7 +72,6 @@ int main(int argc, char * argv[])
     float model_position[3] = { 0.0f, 0.0f, 0.0f };
     float model_scale = 50.0f;
     
-    std::vector<Cube> cubes;
 
     float model_roll = 0.0f;
     float model_pitch = 0.0f;
@@ -88,10 +104,22 @@ int main(int argc, char * argv[])
         return EXIT_FAILURE;
     }
     
-    // Create Context and Load OpenGL Functions
+    // Make Context current and Load OpenGL Functions
     glfwMakeContextCurrent(mWindow);
+
+    glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);
+    glfwSetCursorPosCallback(mWindow, mouse_callback);
+    glfwSetScrollCallback(mWindow, scroll_callback);
+
+    glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    
     gladLoadGL();
+    // set up input callbacks
+
+
     fprintf(stderr, "OpenGL %s\n", glGetString(GL_VERSION));
+
+    // tell GLFW to capture our mouse
 
     // Create imgui context
     ImGui::CreateContext();
@@ -157,12 +185,7 @@ int main(int argc, char * argv[])
             22, 23, 20
         };
 
-        cubes.push_back(Cube(0.0f, 0.0f, 0.0f, 10.0f, 2.0f, 3.0f, 50.0f) );
-        cubes.push_back(Cube(10.0f, 40.0f, 0.0f, 10.0f, 2.0f, 3.0f, 50.0f));
-        cubes.push_back(Cube(-10.0f, 0.0f, -10.0f, 10.0f, 2.0f, 3.0f, 50.0f));
-        cubes.push_back(Cube(0.0f, 20.0f, 100.0f, 10.0f, 2.0f, 3.0f, 50.0f));
-        cubes.push_back(Cube(-50.0f, 20.0f, 50.0f, 10.0f, 2.0f, 3.0f, 50.0f));
-
+        Cube myCube(0.0f, 0.0f, -45.0f, 0.0f, 24.0f, 40.0f, 5.0f);
         
         GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -203,21 +226,19 @@ int main(int argc, char * argv[])
  
         while (glfwWindowShouldClose(mWindow) == false)
         {
-            if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) // User presses esc
-                glfwSetWindowShouldClose(mWindow, true);
+            // Per frame time logic
+            // ----------------------------
+            float currentFrame = glfwGetTime();
+            deltaTime = currentFrame - lastFrame;
+            lastFrame = currentFrame;
 
-            
+            // input
+            // -----------------------------------
+            processInput(mWindow);
 
-            // Create transforms
-            glm::mat4 view(1.0f);
-            glm::mat4 proj(1.0f);
-            
             //proj = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT, -1.0f, 10.0f);
-            proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
-            
-            view = glm::translate(view, glm::vec3(0.0f, 0.0f, -300.0f));
-            //view = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, -3.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
+            glm::mat4 proj = glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
+            glm::mat4 view = camera.GetViewMatrix();
             
             // DRAW LOGIC HERE /////////////
             renderer.setClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
@@ -227,43 +248,35 @@ int main(int argc, char * argv[])
             va.bind();
             ib.bind();
             
-             // update uniforms
-             basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
+            // update uniforms
+            basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
             
-             for (auto cube : cubes)
-            {
-                 glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(cube.x, cube.y, cube.z));
-                 model = glm::scale(model, glm::vec3(cube.sX));
-                 model = glm::rotate(model, glm::radians(cube.roll), glm::vec3(0.0f, 0.0f, 1.0f));
-                 model = glm::rotate(model, glm::radians(cube.pitch), glm::vec3(1.0f, 0.0f, 0.0f));
-                 model = glm::rotate(model, glm::radians(cube.yaw),  glm::vec3(0.0f, 1.0f, 0.0f));
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(myCube.x, myCube.y, myCube.z));
+            model = glm::scale(model, glm::vec3(myCube.sX));
+            model = glm::rotate(model, glm::radians(myCube.roll), glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::rotate(model, glm::radians(myCube.pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(myCube.yaw),  glm::vec3(0.0f, 1.0f, 0.0f));
 
-                 glm::mat4 mvp = proj * view * model;
+            glm::mat4 mvp = proj * view * model;
 
-                 basicShader.setUniformMat4f("u_MVP", mvp);
-                 renderer.draw(va, ib, basicShader); // Render second model
-            }
+            basicShader.setUniformMat4f("u_MVP", mvp);
+            renderer.draw(va, ib, basicShader); // Render model
+            
         
             ImGui_ImplGlfwGL3_NewFrame();
             // IMgui Rendering and input
             {
                 ImGui::Text("Hello, world!");                           // Display some text (you can use a format string too)
-                ImGui::SliderFloat("roll", &model_roll, -360.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f  
-                ImGui::SliderFloat("pitch", &model_pitch, -360.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f  
-                ImGui::SliderFloat("yaw", &model_yaw, -360.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f  
-                ImGui::SliderFloat2("Aposition", model_position, -1000.0f, 1000.0f);
-                ImGui::SliderFloat("A-Zpos", &model_position[2], -100.0f, 100.0f);
-                ImGui::SliderFloat("Scale", &model_scale, 0.10f, 100.0f);
-
-
-
-
 
                 ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
                 ImGui::ColorEdit4("uniform color", (float*)&uniform_color); // Edit 3 floats representing a color
 
-                ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our windows open/close state
-                ImGui::Checkbox("Another Window", &show_another_window);
+                double xPos;
+                double yPos;
+                glfwGetCursorPos(mWindow, &xPos, &yPos);
+                ImGui::Text("MousePos: %.1f %.1f )", (float)xPos, (float)yPos);
+                ImGui::Text("MouseScroll: %.1f )", camera.Zoom);
+
 
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         
@@ -271,8 +284,8 @@ int main(int argc, char * argv[])
             // Render with imgui
             ImGui::Render();
             ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-            }
 
+            }
             // Flip Buffers and Draw
             glfwSwapBuffers(mWindow);
             glfwPollEvents();
@@ -282,8 +295,59 @@ int main(int argc, char * argv[])
     
     glfwTerminate();
     
-
-
     return EXIT_SUCCESS;
 }
 
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
+void processInput(GLFWwindow *window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime);
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and 
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}
+
+
+// glfw: whenever the mouse moves, this callback is called
+// -------------------------------------------------------
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera.ProcessMouseScroll(yoffset);
+}
