@@ -43,18 +43,16 @@ struct Cube
 {
     Cube(float posx, float posy, float posz, float op, float or , float oy, float s)
     {
-        x = posx;
-        y = posy;
-        z = posz;
+        position[0] = posx;
+        position[1] = posy;
+        position[2] = posz;
+
         pitch = op;
         roll = or;
         yaw = oy;
         sX = sY = sZ = s;
     };
-
-    float x;
-    float y;
-    float z;
+    float position[3];
     float pitch;
     float roll;
     float yaw;
@@ -69,6 +67,8 @@ int main(int argc, char * argv[])
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     ImVec4 uniform_color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    ImVec4 light_color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
     float model_position[3] = { 0.0f, 0.0f, 0.0f };
     float model_scale = 50.0f;
     
@@ -185,40 +185,50 @@ int main(int argc, char * argv[])
             22, 23, 20
         };
 
-        Cube myCube(0.0f, 0.0f, -45.0f, 0.0f, 24.0f, 40.0f, 5.0f);
+        Cube texturedCube(0.0f, 0.0f, -45.0f, 0.0f, 24.0f, 40.0f, 5.0f);
+        Cube lightCube(10.0f, 10.0f, -10.0f, 0.0f, 0.0f, 0.0f, 2.5f);
         
+        // Enable GL parameteres
+        // ---------------------------------
         GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
         GLCall(glEnable(GL_DEPTH_TEST));
 
-        // Init vertexArray
-        VertexArray va;
-        VertexBuffer vb(vertices, sizeof(vertices)); // 4 * 4 * sizeof(float)
+        // Init cube vertexArray
+        VertexArray cubeVao;
+        VertexBuffer cubeVbo(vertices, sizeof(vertices)); // 4 * 4 * sizeof(float)
         VertexBufferLayout layout;
         layout.push<float>(3);
         layout.push<float>(2);
-        va.addBuffer(vb, layout);
-    
-       
+        cubeVao.addBuffer(cubeVbo, layout);
 
-        // Init Index buffer object
+        // Init Index buffer object for cube
         IndexBuffer ib(indices, sizeof(indices));
 
-        // Create shader
+
+        // Create textured cube shader
         Shader basicShader("../RTG_proj/Shaders/basic.shader");
         basicShader.bind();
+
+
         // set shader uniforms
         basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
         basicShader.setUniformMat4f("u_MVP", glm::mat4(1.0f));
+
         
         // Create Texture
         Texture texture("../RTG_PROJ/Resources/test.png");
         texture.bind();
         basicShader.SetUniform1i("u_Texture", 0);
+        basicShader.unbind();
+        // Create light shader
+        Shader lightShader("../RTG_proj/Shaders/light.shader");
+        lightShader.bind();
         // Unbind everything
-        va.unbind();
-        vb.unbind();
+        cubeVao.unbind();
+        cubeVbo.unbind();
+        texture.unbind();
         ib.unbind();
         basicShader.unbind();
 
@@ -244,24 +254,51 @@ int main(int argc, char * argv[])
             renderer.setClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
             renderer.clear();
 
-            basicShader.bind();
-            va.bind();
+            cubeVao.bind();
             ib.bind();
             
-            // update uniforms
-            basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
-            
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(myCube.x, myCube.y, myCube.z));
-            model = glm::scale(model, glm::vec3(myCube.sX));
-            model = glm::rotate(model, glm::radians(myCube.roll), glm::vec3(0.0f, 0.0f, 1.0f));
-            model = glm::rotate(model, glm::radians(myCube.pitch), glm::vec3(1.0f, 0.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(myCube.yaw),  glm::vec3(0.0f, 1.0f, 0.0f));
+            // Render textured cube
+            // ------------------------
+            {
+                basicShader.bind();
+                // update uniforms
+                basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
+                basicShader.SetUniform3f("u_LightColor", light_color.x, light_color.y, light_color.z);
 
-            glm::mat4 mvp = proj * view * model;
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(texturedCube.position[0], texturedCube.position[1], texturedCube.position[2]));
+                model = glm::scale(model, glm::vec3(texturedCube.sX));
+                model = glm::rotate(model, glm::radians(texturedCube.roll), glm::vec3(0.0f, 0.0f, 1.0f));
+                model = glm::rotate(model, glm::radians(texturedCube.pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+                model = glm::rotate(model, glm::radians(texturedCube.yaw), glm::vec3(0.0f, 1.0f, 0.0f));
 
-            basicShader.setUniformMat4f("u_MVP", mvp);
-            renderer.draw(va, ib, basicShader); // Render model
-            
+                glm::mat4 mvp = proj * view * model;
+                texture.bind();
+                basicShader.setUniformMat4f("u_MVP", mvp);
+                renderer.draw(cubeVao, ib, basicShader); // Render model
+                texture.unbind();
+                basicShader.unbind();
+            }
+
+
+            // Render light cube
+            // ------------------------
+            {
+                lightShader.bind();
+                // update uniforms
+                lightShader.SetUniform4f("u_Color", light_color.x, light_color.y, light_color.z, light_color.w);
+
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(lightCube.position[0], lightCube.position[1], lightCube.position[2]));
+                model = glm::scale(model, glm::vec3(lightCube.sX));
+                model = glm::rotate(model, glm::radians(lightCube.roll), glm::vec3(0.0f, 0.0f, 1.0f));
+                model = glm::rotate(model, glm::radians(lightCube.pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+                model = glm::rotate(model, glm::radians(lightCube.yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+
+                glm::mat4 mvp = proj * view * model;
+                lightShader.setUniformMat4f("u_MVP", mvp);
+                renderer.draw(cubeVao, ib, lightShader); // Render model
+            }
+
+
         
             ImGui_ImplGlfwGL3_NewFrame();
             // IMgui Rendering and input
@@ -270,6 +307,9 @@ int main(int argc, char * argv[])
 
                 ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
                 ImGui::ColorEdit4("uniform color", (float*)&uniform_color); // Edit 3 floats representing a color
+                ImGui::ColorEdit4("Light color", (float*)&light_color); // Edit 3 floats representing a color
+                ImGui::SliderFloat3("Ligth Position", lightCube.position, -100.0f, 100.0f);
+                
 
                 double xPos;
                 double yPos;
@@ -281,9 +321,9 @@ int main(int argc, char * argv[])
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         
         
-            // Render with imgui
-            ImGui::Render();
-            ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+                // Render with imgui
+                ImGui::Render();
+                ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
             }
             // Flip Buffers and Draw
@@ -302,6 +342,7 @@ int main(int argc, char * argv[])
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
+    static bool toggle = true;
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
@@ -313,6 +354,20 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        if (!toggle)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            toggle = true;
+        }
+        else
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            toggle = false;
+        }
+    }
+
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

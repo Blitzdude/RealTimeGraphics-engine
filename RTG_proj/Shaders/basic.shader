@@ -24,9 +24,12 @@ in vec2 v_TexCoord;
 
 uniform vec4 u_Color;
 uniform sampler2D u_Texture;
+uniform vec3 u_LightColor;
 
 void main()
 {
+    float ambientStrength = 0.1;
+    vec3 ambient = ambientStrength * u_LightColor;
     vec4 texColor = texture(u_Texture, v_TexCoord) * u_Color;
-    color = texColor;;
+    color = vec4(ambient.xyz, 1.0) * texColor;
 }
