@@ -156,9 +156,6 @@ void Shader::createShaderProgram()
 
     ShaderSource sSource = Shader::parseShader(m_filepath.c_str());
     
-    std::cout << "Vertex: " << sSource.vertexSource << std::endl;
-    std::cout << "Fragment" << sSource.fragmentSource << std::endl;
-    
     GLuint vs = compileShader(GL_VERTEX_SHADER, sSource.vertexSource);
     GLuint fs = compileShader(GL_FRAGMENT_SHADER, sSource.fragmentSource);
 

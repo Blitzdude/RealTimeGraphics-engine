@@ -32,6 +32,8 @@ public:
 
     void setUniformMat4f(const std::string& name, glm::mat4& matrix);
 
+    inline GLuint getProgramID() const { return m_programId; };
+
 private:
     ShaderSource parseShader(const char* filepath);
     GLuint compileShader(GLuint type, const std::string& source);

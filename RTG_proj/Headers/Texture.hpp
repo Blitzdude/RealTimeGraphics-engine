@@ -15,6 +15,9 @@ public:
 
     inline int getWidth() const { return m_width; };
     inline int getHeight() const { return m_height; };
+    inline GLuint getID() const { return m_rendererID; };
+public:
+    std::string type;
 private:
     GLuint m_rendererID;
     std::string m_filepath;

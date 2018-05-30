@@ -8,6 +8,7 @@
 #include "Renderer.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
+#include "Model.hpp"
 
 // System Headers
 #include <GLFW/glfw3.h>
@@ -49,7 +50,7 @@ struct Cube
         position[2] = posz;
 
         orientation[0] = op;
-        orientation[1] = or;
+        orientation[1] = or ;
         orientation[2] = oy;
 
 
@@ -74,7 +75,7 @@ int main(int argc, char * argv[])
 
     float model_position[3] = { 0.0f, 0.0f, 0.0f };
     float model_scale = 50.0f;
-    
+
 
     float model_roll = 0.0f;
     float model_pitch = 0.0f;
@@ -83,17 +84,17 @@ int main(int argc, char * argv[])
     // Load GLFW and Create a Window
     if (!glfwInit())
         return -1;
-    
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-    
+
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-    
+
     GLFWwindow* mWindow = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGL", nullptr, nullptr);
     if (!mWindow)
     {
@@ -106,7 +107,7 @@ int main(int argc, char * argv[])
         fprintf(stderr, "Failed to Create OpenGL Context");
         return EXIT_FAILURE;
     }
-    
+
     // Make Context current and Load OpenGL Functions
     glfwMakeContextCurrent(mWindow);
 
@@ -115,7 +116,7 @@ int main(int argc, char * argv[])
     glfwSetScrollCallback(mWindow, scroll_callback);
 
     glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    
+
     gladLoadGL();
     // set up input callbacks
 
@@ -131,41 +132,41 @@ int main(int argc, char * argv[])
 
     {   // Scope to make sure all buffers get desroyed before
         // glfwTerminate is called
-    
+
         // Vertex initialization
-        
+
         float vertices[] = {
             /* position.xyz, normals.xyz, uv.st*/
             //front
             -1.0f, -1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // 0 
-             1.0f, -1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // 1
-             1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // 2
+            1.0f, -1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // 1
+            1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // 2
             -1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // 3
             // right
-             1.0f, -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // 4
-             1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // 5
-             1.0f,  1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 6
-             1.0f,  1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // 7
+            1.0f, -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // 4
+            1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // 5
+            1.0f,  1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 6
+            1.0f,  1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // 7
             // back
-             1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // 8
+            1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // 8
             -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, // 9
             -1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // 10
-             1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, // 11
+            1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, // 11
             // left
             -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // 12 
             -1.0f, -1.0f,  1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // 13
             -1.0f,  1.0f,  1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 14
             -1.0f,  1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // 15
-            // bottom
-            -1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // 16
+             // bottom
+             -1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // 16
              1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f, // 17
              1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // 18
-            -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, // 19
-            // top 
-            -1.0f,  1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // 20
+             -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, // 19
+             // top 
+             -1.0f,  1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // 20
              1.0f,  1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // 21
              1.0f,  1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // 22
-            -1.0f,  1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f  // 23
+             -1.0f,  1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f  // 23
         };
 
         unsigned int indices[] = {
@@ -189,11 +190,26 @@ int main(int argc, char * argv[])
             22, 23, 20
         };
 
-        Cube texturedCube1(0.0f, 0.0f, -45.0f, 0.0f, 0.0f, 0.0f, 5.0f);
-        Cube texturedCube2(20.0f, -80.0f, -45.0f, 0.0f, 0.0f, 0.0f, 100.0f);
 
+        // Create shaders
+        // --------------------------------
+        Shader basicShader("../RTG_proj/Shaders/basic.shader");
+        Shader lightShader("../RTG_proj/Shaders/light.shader");
+        Shader meshShader("../RTG_proj/Shaders/mesh.shader");
+
+        // Load Textures
+        // ---------------------------------
+        Texture texture("../RTG_PROJ/Resources/test.png");
+        Texture blank("../RTG_PROJ/Resources/blank.png");
+
+        // Load Models and init cubes
+        // -----------------------------------
+        Model sponza("../RTG_proj/Resources/Models/sponza/sponza.obj");
+
+        Cube texturedCube1(0.0f, 0.0f, -45.0f, 0.0f, 0.0f, 0.0f, 5.0f);
+        Cube texturedCube2(20.0f, -180.0f, -45.0f, 0.0f, 0.0f, 0.0f, 100.0f);
         Cube lightCube(10.0f, 10.0f, -10.0f, 0.0f, 0.0f, 0.0f, 2.5f);
-        
+
         // Enable GL parameteres
         // ---------------------------------
         GLCall(glEnable(GL_BLEND));
@@ -213,35 +229,22 @@ int main(int argc, char * argv[])
         // Init Index buffer object for cube
         IndexBuffer ib(indices, sizeof(indices));
 
-
         // Create textured cube shader
-        Shader basicShader("../RTG_proj/Shaders/basic.shader");
-        basicShader.bind();
-
-
-        // set shader uniforms
-        basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
-        basicShader.setUniformMat4f("u_MVP", glm::mat4(1.0f));
-
         
-        // Create Texture
-        Texture texture("../RTG_PROJ/Resources/test.png");
-        Texture blank("../RTG_PROJ/Resources/blank.png");
+        
 
-        texture.bind();
-        basicShader.unbind();
-        // Create light shader
-        Shader lightShader("../RTG_proj/Shaders/light.shadejfdoigapjr");
-        lightShader.bind();
         // Unbind everything
+
         cubeVao.unbind();
         cubeVbo.unbind();
         texture.unbind();
         ib.unbind();
         basicShader.unbind();
+        meshShader.unbind();
+
 
         Renderer renderer;
- 
+
         while (glfwWindowShouldClose(mWindow) == false)
         {
             // Per frame time logic
@@ -254,95 +257,138 @@ int main(int argc, char * argv[])
             // -----------------------------------
             processInput(mWindow);
 
-            //proj = glm::ortho(0.0f, (float)WINDOW_WIDTH, 0.0f, (float)WINDOW_HEIGHT, -1.0f, 10.0f);
-            glm::mat4 proj = glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 1000.0f);
+            // projection and view matrix
+            // -----------------------------------
+            glm::mat4 proj = glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 10000.0f);
             glm::mat4 view = camera.GetViewMatrix();
-            
-            // DRAW LOGIC HERE /////////////
+
+            // Draw logic begin
+            // -----------------------------------
             renderer.setClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
             renderer.clear();
 
-            cubeVao.bind();
-            ib.bind();
-            
-            // Render textured cube1
-            // ------------------------
+            // Render sponza model
+            // ---------------------------
             {
-                basicShader.bind();
-                // update uniforms
-                basicShader.SetUniform1i("u_Texture", 0);
-                basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
-                basicShader.SetUniform3f("u_LightColor", light_color.x, light_color.y, light_color.z);
-                basicShader.SetUniform3f("u_LightPos", lightCube.position[0], lightCube.position[1], lightCube.position[2]);
-                basicShader.SetUniform3f("u_ViewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+                meshShader.bind();
 
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(texturedCube1.position[0], texturedCube1.position[1], texturedCube1.position[2]));
-                model = glm::rotate(model, glm::radians(texturedCube1.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
-                model = glm::rotate(model, glm::radians(texturedCube1.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
-                model = glm::rotate(model, glm::radians(texturedCube1.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
-                model = glm::scale(model, glm::vec3(texturedCube1.scale[0], texturedCube1.scale[1], texturedCube1.scale[2]));
+                glm::mat4 model(1.0f);
+                model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+                model = glm::scale(model, glm::vec3(1.f, 1.0f, 1.0f));
+
 
                 glm::mat4 mvp = proj * view * model;
-                texture.bind();
-                basicShader.setUniformMat4f("u_ModelViewProj", mvp);
-                basicShader.setUniformMat4f("u_Model", model);
-                renderer.draw(cubeVao, ib, basicShader); // Render model
-                texture.unbind();
-                basicShader.unbind();
+
+                meshShader.setUniformMat4f("u_ModelViewProj", mvp);
+
+                sponza.Draw(meshShader);
+                meshShader.unbind();
             }
+
+
+            // Render textured cube1
+            // ------------------------
+
+            {
+            basicShader.bind();
+            // update uniforms
+            basicShader.SetUniform1i("u_Texture", 0);
+            basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
+
+            basicShader.SetUniform3f("u_Material.ambient", 1.0f, 0.5f, 0.31f);
+            basicShader.SetUniform3f("u_Material.diffuse", 1.0f, 0.5f, 0.31f);
+            basicShader.SetUniform3f("u_Material.specular", 0.5f, 0.5f, 0.5f);
+            basicShader.SetUniform1f("u_Material.shininess", 32.0f);
+
+            basicShader.SetUniform3f("u_ViewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+            basicShader.SetUniform3f("u_LightColor", light_color.x, light_color.y, light_color.z);
+            basicShader.SetUniform3f("u_Light.position", lightCube.position[0], lightCube.position[1], lightCube.position[2]);
+            basicShader.SetUniform3f("u_Light.ambient", 0.2f, 0.2f, 0.2f);
+            basicShader.SetUniform3f("u_Light.diffuse", 0.5f, 0.5f, 0.5f);
+            basicShader.SetUniform3f("u_Light.specular", 1.f, 1.0f, 1.0f);
+
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(texturedCube1.position[0], texturedCube1.position[1], texturedCube1.position[2]));
+            model = glm::rotate(model, glm::radians(texturedCube1.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::rotate(model, glm::radians(texturedCube1.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(texturedCube1.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::scale(model, glm::vec3(texturedCube1.scale[0], texturedCube1.scale[1], texturedCube1.scale[2]));
+
+            glm::mat4 mvp = proj * view * model;
+            texture.bind();
+            basicShader.setUniformMat4f("u_ModelViewProj", mvp);
+            basicShader.setUniformMat4f("u_Model", model);
+            renderer.draw(cubeVao, ib, basicShader); // Render model
+            texture.unbind();
+            }
+            
 
             // Render textured cube2
             // ------------------------
+            
             {
-                basicShader.bind();
-                // update uniforms
-                basicShader.SetUniform1i("u_Texture", 1);
-                basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
-                basicShader.SetUniform3f("u_LightColor", light_color.x, light_color.y, light_color.z);
-                basicShader.SetUniform3f("u_LightPos", lightCube.position[0], lightCube.position[1], lightCube.position[2]);
+            // update uniforms
+            basicShader.SetUniform1i("u_Texture", 1);
+            basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
 
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(texturedCube2.position[0], texturedCube2.position[1], texturedCube2.position[2]));
-                model = glm::rotate(model, glm::radians(texturedCube2.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
-                model = glm::rotate(model, glm::radians(texturedCube2.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
-                model = glm::rotate(model, glm::radians(texturedCube2.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
-                model = glm::scale(model, glm::vec3(texturedCube2.scale[0], texturedCube2.scale[1], texturedCube2.scale[2]));
+            basicShader.SetUniform3f("u_Material.ambient", 0.24725f, 0.1995f, 0.0745f);
+            basicShader.SetUniform3f("u_Material.diffuse", 0.75164f, 0.60648f, 0.22648f);
+            basicShader.SetUniform3f("u_Material.specular", 0.628281f, 0.555802f, 0.366065f);
+            basicShader.SetUniform1f("u_Material.shininess", 0.6f * 128);
 
-                glm::mat4 mvp = proj * view * model;
-                blank.bind(1);
-                basicShader.setUniformMat4f("u_ModelViewProj", mvp);
-                basicShader.setUniformMat4f("u_Model", model);
-                renderer.draw(cubeVao, ib, basicShader); // Render model
-                blank.unbind();
-                basicShader.unbind();
+            basicShader.SetUniform3f("u_ViewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+            basicShader.SetUniform3f("u_LightColor", light_color.x, light_color.y, light_color.z);
+            basicShader.SetUniform3f("u_Light.position", lightCube.position[0], lightCube.position[1], lightCube.position[2]);
+            basicShader.SetUniform3f("u_Light.ambient", 0.2f, 0.2f, 0.2f);
+            basicShader.SetUniform3f("u_Light.diffuse", 0.5f, 0.5f, 0.5f);
+            basicShader.SetUniform3f("u_Light.specular", 1.f, 1.0f, 1.0f);
+
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(texturedCube2.position[0], texturedCube2.position[1], texturedCube2.position[2]));
+            model = glm::rotate(model, glm::radians(texturedCube2.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::rotate(model, glm::radians(texturedCube2.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(texturedCube2.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::scale(model, glm::vec3(texturedCube2.scale[0], texturedCube2.scale[1], texturedCube2.scale[2]));
+
+            glm::mat4 mvp = proj * view * model;
+            blank.bind(1);
+            basicShader.setUniformMat4f("u_ModelViewProj", mvp);
+            basicShader.setUniformMat4f("u_Model", model);
+            renderer.draw(cubeVao, ib, basicShader); // Render model
+            blank.unbind();
+            basicShader.unbind();
             }
+            
+
 
             // Render light cube
             // ------------------------
+            
             {
-                lightShader.bind();
-                // update uniforms
-                lightShader.SetUniform4f("u_Color", light_color.x, light_color.y, light_color.z, light_color.w);
+            lightShader.bind();
+            // update uniforms
+            lightShader.SetUniform4f("u_Color", light_color.x, light_color.y, light_color.z, light_color.w);
 
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(lightCube.position[0], lightCube.position[1], lightCube.position[2]));
-                model = glm::rotate(model, glm::radians(lightCube.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
-                model = glm::rotate(model, glm::radians(lightCube.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
-                model = glm::rotate(model, glm::radians(lightCube.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
-                model = glm::scale(model, glm::vec3(lightCube.scale[0], lightCube.scale[1], lightCube.scale[2]));
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(lightCube.position[0], lightCube.position[1], lightCube.position[2]));
+            model = glm::rotate(model, glm::radians(lightCube.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
+            model = glm::rotate(model, glm::radians(lightCube.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, glm::radians(lightCube.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
+            model = glm::scale(model, glm::vec3(lightCube.scale[0], lightCube.scale[1], lightCube.scale[2]));
 
-                glm::mat4 mvp = proj * view * model;
-                lightShader.setUniformMat4f("u_ModelViewProj", mvp);
-                renderer.draw(cubeVao, ib, lightShader); // Render model
+            glm::mat4 mvp = proj * view * model;
+            lightShader.setUniformMat4f("u_ModelViewProj", mvp);
+            renderer.draw(cubeVao, ib, lightShader); // Render model
+            lightShader.unbind();
             }
+            
 
             ImGui_ImplGlfwGL3_NewFrame();
             // IMgui Rendering and input
             {
-                ImGui::Text("Hello, world!");                           // Display some text (you can use a format string too)
+                ImGui::Text("Debug");  // Display some text (you can use a format string too)
 
-                ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-                ImGui::ColorEdit4("uniform color", (float*)&uniform_color); // Edit 3 floats representing a color
-                ImGui::ColorEdit4("Light color", (float*)&light_color); // Edit 3 floats representing a color
-                // CUBE1 -------------------------------
+                ImGui::ColorEdit3("clear color", (float*)&clear_color);         // Edit 3 floats representing a color
+                ImGui::ColorEdit4("uniform color", (float*)&uniform_color);     // Edit 3 floats representing a color
+                ImGui::ColorEdit4("Light color", (float*)&light_color);          // Edit 3 floats representing a color
+                 // CUBE1 -------------------------------
                 ImGui::SliderFloat3("cube1 Position", texturedCube1.position, -100.0f, 100.0f);
                 ImGui::SliderFloat3("cube1 Roll/Pitch/Yaw", texturedCube1.orientation, -360.0f, 360.0f);
                 ImGui::SliderFloat3("cube1 Scale", texturedCube1.scale, -0.0f, 100.0f);
@@ -354,7 +400,7 @@ int main(int argc, char * argv[])
 
 
                 ImGui::SliderFloat3("Ligth Position", lightCube.position, -100.0f, 100.0f);
-                
+
 
                 double xPos;
                 double yPos;
@@ -364,22 +410,25 @@ int main(int argc, char * argv[])
 
 
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        
-        
+
+
                 // Render with imgui
                 ImGui::Render();
                 ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
             }
+
+
+
             // Flip Buffers and Draw
             glfwSwapBuffers(mWindow);
             glfwPollEvents();
         }
     }
     // Cleanup
-    
+
     glfwTerminate();
-    
+
     return EXIT_SUCCESS;
 }
 

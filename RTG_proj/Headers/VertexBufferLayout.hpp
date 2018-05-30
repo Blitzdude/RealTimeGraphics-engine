@@ -55,6 +55,20 @@ public:
         m_stride += count * VertexBufferElement::getSizeOfType(GL_UNSIGNED_BYTE);
     }
 
+    template<>
+    void push<glm::vec2>(unsigned int count) // TODO: Mod to use float push
+    {
+        m_elements.push_back({ GL_FLOAT, count * 2, GL_TRUE });
+        m_stride += count * 2 * VertexBufferElement::getSizeOfType(GL_FLOAT);
+    }
+
+    template<>
+    void push<glm::vec3>(unsigned int count) // TODO: Mod to use float push
+    {
+        m_elements.push_back({ GL_FLOAT, count * 3, GL_FALSE });
+        m_stride += count * 3 * VertexBufferElement::getSizeOfType(GL_FLOAT);
+    }
+
     inline const std::vector<VertexBufferElement>& getElements() const { return m_elements; };
     inline unsigned int getStride() const { return m_stride; }
 

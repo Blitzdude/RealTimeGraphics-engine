@@ -26,11 +26,3 @@ void Renderer::draw(const VertexArray& va, const IndexBuffer& ib, const Shader& 
     ib.bind();
     GLCall(glDrawElements(GL_TRIANGLES, ib.getCount(), GL_UNSIGNED_INT, nullptr));
 }
-
-void Renderer::bind() const
-{
-}
-
-void Renderer::unbind() const
-{
-}
