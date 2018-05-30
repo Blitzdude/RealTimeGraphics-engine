@@ -204,10 +204,10 @@ int main(int argc, char * argv[])
 
         // Load Models and init cubes
         // -----------------------------------
-        Model sponza("../RTG_proj/Resources/Models/sponza/sponza.obj");
+        Model sponza("../RTG_proj/Resources/Models/nanosuit/nanosuit.obj");
 
-        Cube texturedCube1(0.0f, 0.0f, -45.0f, 0.0f, 0.0f, 0.0f, 5.0f);
-        Cube texturedCube2(20.0f, -180.0f, -45.0f, 0.0f, 0.0f, 0.0f, 100.0f);
+        Cube texturedCube1(0.0f, 0.0f, -45.0f, 0.0f, 0.0f, 0.0f, 10.0f);
+        Cube texturedCube2(20.0f, 18.0f, -45.0f, 0.0f, 0.0f, 0.0f, 10.0f);
         Cube lightCube(10.0f, 10.0f, -10.0f, 0.0f, 0.0f, 0.0f, 2.5f);
 
         // Enable GL parameteres
@@ -280,6 +280,16 @@ int main(int argc, char * argv[])
                 glm::mat4 mvp = proj * view * model;
 
                 meshShader.setUniformMat4f("u_ModelViewProj", mvp);
+                //meshShader.setUniformMat4f("u_Model", model);
+
+
+               // basicShader.SetUniform3f("u_ViewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+                // basicShader.SetUniform3f("u_Light.color", light_color.x, light_color.y, light_color.z);
+                // basicShader.SetUniform3f("u_Light.position", lightCube.position[0], lightCube.position[1], lightCube.position[2]);
+                // basicShader.SetUniform3f("u_Light.ambient", 0.2f, 0.2f, 0.2f);
+                // basicShader.SetUniform3f("u_Light.diffuse", 0.5f, 0.5f, 0.5f);
+                // basicShader.SetUniform3f("u_Light.specular", 1.f, 1.0f, 1.0f);
+
 
                 sponza.Draw(meshShader);
                 meshShader.unbind();
