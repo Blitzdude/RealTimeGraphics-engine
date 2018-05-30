@@ -33,6 +33,7 @@ Camera camera(glm::vec3(0.0f, 0.0f, -3.0f));
 float lastX = WINDOW_WIDTH / 2.0f;
 float lastY = WINDOW_HEIGHT / 2.0f;
 bool firstMouse = true;
+bool enableInput = true;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -47,16 +48,18 @@ struct Cube
         position[1] = posy;
         position[2] = posz;
 
-        pitch = op;
-        roll = or;
-        yaw = oy;
-        sX = sY = sZ = s;
+        orientation[0] = op;
+        orientation[1] = or;
+        orientation[2] = oy;
+
+
+        scale[0] = s;
+        scale[1] = s;
+        scale[2] = s;
     };
     float position[3];
-    float pitch;
-    float roll;
-    float yaw;
-    float sX, sY, sZ;
+    float orientation[3];
+    float scale[3];
 };
 
 
@@ -85,7 +88,7 @@ int main(int argc, char * argv[])
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
     
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -132,36 +135,37 @@ int main(int argc, char * argv[])
         // Vertex initialization
         
         float vertices[] = {
+            /* position.xyz, normals.xyz, uv.st*/
             //front
-            -1.0f, -1.0f,  1.0f, 0.0f, 0.0f, // 0 
-             1.0f, -1.0f,  1.0f, 1.0f, 0.0f, // 1
-             1.0f,  1.0f,  1.0f, 1.0f, 1.0f, // 2
-            -1.0f,  1.0f,  1.0f, 0.0f, 1.0f, // 3
+            -1.0f, -1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // 0 
+             1.0f, -1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // 1
+             1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // 2
+            -1.0f,  1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // 3
             // right
-             1.0f, -1.0f,  1.0f, 0.0f, 0.0f, // 4
-             1.0f, -1.0f, -1.0f, 1.0f, 0.0f, // 5
-             1.0f,  1.0f, -1.0f, 1.0f, 1.0f, // 6
-             1.0f,  1.0f,  1.0f, 0.0f, 1.0f, // 7
+             1.0f, -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // 4
+             1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // 5
+             1.0f,  1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 6
+             1.0f,  1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // 7
             // back
-             1.0f, -1.0f, -1.0f, 0.0f, 0.0f, // 8
-             -1.0f, -1.0f, -1.0f, 1.0f, 0.0f, // 9
-             -1.0f,  1.0f, -1.0f, 1.0f, 1.0f, // 10
-             1.0f,  1.0f, -1.0f, 0.0f, 1.0f, // 11
+             1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // 8
+            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, // 9
+            -1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f, // 10
+             1.0f,  1.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, // 11
             // left
-            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, // 12 
-            -1.0f, -1.0f,  1.0f, 1.0f, 0.0f, // 13
-            -1.0f,  1.0f,  1.0f, 1.0f, 1.0f, // 14
-            -1.0f,  1.0f, -1.0f, 0.0f, 1.0f, // 15
+            -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // 12 
+            -1.0f, -1.0f,  1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, // 13
+            -1.0f,  1.0f,  1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 14
+            -1.0f,  1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // 15
             // bottom
-            -1.0f, -1.0f,  1.0f, 0.0f, 1.0f, // 16
-             1.0f, -1.0f,  1.0f, 1.0f, 1.0f, // 17
-             1.0f, -1.0f, -1.0f, 1.0f, 0.0f, // 18
-            -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, // 19
+            -1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // 16
+             1.0f, -1.0f,  1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f, // 17
+             1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, // 18
+            -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, // 19
             // top 
-            -1.0f,  1.0f,  1.0f, 0.0f, 0.0f, // 20
-             1.0f,  1.0f,  1.0f, 1.0f, 0.0f, // 21
-             1.0f,  1.0f, -1.0f, 1.0f, 1.0f, // 22
-            -1.0f,  1.0f, -1.0f, 0.0f, 1.0f  // 23
+            -1.0f,  1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // 20
+             1.0f,  1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // 21
+             1.0f,  1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // 22
+            -1.0f,  1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f  // 23
         };
 
         unsigned int indices[] = {
@@ -185,7 +189,9 @@ int main(int argc, char * argv[])
             22, 23, 20
         };
 
-        Cube texturedCube(0.0f, 0.0f, -45.0f, 0.0f, 24.0f, 40.0f, 5.0f);
+        Cube texturedCube1(0.0f, 0.0f, -45.0f, 0.0f, 0.0f, 0.0f, 5.0f);
+        Cube texturedCube2(20.0f, -80.0f, -45.0f, 0.0f, 0.0f, 0.0f, 100.0f);
+
         Cube lightCube(10.0f, 10.0f, -10.0f, 0.0f, 0.0f, 0.0f, 2.5f);
         
         // Enable GL parameteres
@@ -199,8 +205,9 @@ int main(int argc, char * argv[])
         VertexArray cubeVao;
         VertexBuffer cubeVbo(vertices, sizeof(vertices)); // 4 * 4 * sizeof(float)
         VertexBufferLayout layout;
-        layout.push<float>(3);
-        layout.push<float>(2);
+        layout.push<float>(3); // vertex.xyz
+        layout.push<float>(3); // normal.xyz
+        layout.push<float>(2); // uv.st
         cubeVao.addBuffer(cubeVbo, layout);
 
         // Init Index buffer object for cube
@@ -219,11 +226,12 @@ int main(int argc, char * argv[])
         
         // Create Texture
         Texture texture("../RTG_PROJ/Resources/test.png");
+        Texture blank("../RTG_PROJ/Resources/blank.png");
+
         texture.bind();
-        basicShader.SetUniform1i("u_Texture", 0);
         basicShader.unbind();
         // Create light shader
-        Shader lightShader("../RTG_proj/Shaders/light.shader");
+        Shader lightShader("../RTG_proj/Shaders/light.shadejfdoigapjr");
         lightShader.bind();
         // Unbind everything
         cubeVao.unbind();
@@ -257,28 +265,56 @@ int main(int argc, char * argv[])
             cubeVao.bind();
             ib.bind();
             
-            // Render textured cube
+            // Render textured cube1
             // ------------------------
             {
                 basicShader.bind();
                 // update uniforms
+                basicShader.SetUniform1i("u_Texture", 0);
                 basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
                 basicShader.SetUniform3f("u_LightColor", light_color.x, light_color.y, light_color.z);
+                basicShader.SetUniform3f("u_LightPos", lightCube.position[0], lightCube.position[1], lightCube.position[2]);
+                basicShader.SetUniform3f("u_ViewPos", camera.Position.x, camera.Position.y, camera.Position.z);
 
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(texturedCube.position[0], texturedCube.position[1], texturedCube.position[2]));
-                model = glm::scale(model, glm::vec3(texturedCube.sX));
-                model = glm::rotate(model, glm::radians(texturedCube.roll), glm::vec3(0.0f, 0.0f, 1.0f));
-                model = glm::rotate(model, glm::radians(texturedCube.pitch), glm::vec3(1.0f, 0.0f, 0.0f));
-                model = glm::rotate(model, glm::radians(texturedCube.yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(texturedCube1.position[0], texturedCube1.position[1], texturedCube1.position[2]));
+                model = glm::rotate(model, glm::radians(texturedCube1.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
+                model = glm::rotate(model, glm::radians(texturedCube1.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
+                model = glm::rotate(model, glm::radians(texturedCube1.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
+                model = glm::scale(model, glm::vec3(texturedCube1.scale[0], texturedCube1.scale[1], texturedCube1.scale[2]));
 
                 glm::mat4 mvp = proj * view * model;
                 texture.bind();
-                basicShader.setUniformMat4f("u_MVP", mvp);
+                basicShader.setUniformMat4f("u_ModelViewProj", mvp);
+                basicShader.setUniformMat4f("u_Model", model);
                 renderer.draw(cubeVao, ib, basicShader); // Render model
                 texture.unbind();
                 basicShader.unbind();
             }
 
+            // Render textured cube2
+            // ------------------------
+            {
+                basicShader.bind();
+                // update uniforms
+                basicShader.SetUniform1i("u_Texture", 1);
+                basicShader.SetUniform4f("u_Color", uniform_color.x, uniform_color.y, uniform_color.z, uniform_color.w);
+                basicShader.SetUniform3f("u_LightColor", light_color.x, light_color.y, light_color.z);
+                basicShader.SetUniform3f("u_LightPos", lightCube.position[0], lightCube.position[1], lightCube.position[2]);
+
+                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(texturedCube2.position[0], texturedCube2.position[1], texturedCube2.position[2]));
+                model = glm::rotate(model, glm::radians(texturedCube2.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
+                model = glm::rotate(model, glm::radians(texturedCube2.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
+                model = glm::rotate(model, glm::radians(texturedCube2.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
+                model = glm::scale(model, glm::vec3(texturedCube2.scale[0], texturedCube2.scale[1], texturedCube2.scale[2]));
+
+                glm::mat4 mvp = proj * view * model;
+                blank.bind(1);
+                basicShader.setUniformMat4f("u_ModelViewProj", mvp);
+                basicShader.setUniformMat4f("u_Model", model);
+                renderer.draw(cubeVao, ib, basicShader); // Render model
+                blank.unbind();
+                basicShader.unbind();
+            }
 
             // Render light cube
             // ------------------------
@@ -288,18 +324,16 @@ int main(int argc, char * argv[])
                 lightShader.SetUniform4f("u_Color", light_color.x, light_color.y, light_color.z, light_color.w);
 
                 glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(lightCube.position[0], lightCube.position[1], lightCube.position[2]));
-                model = glm::scale(model, glm::vec3(lightCube.sX));
-                model = glm::rotate(model, glm::radians(lightCube.roll), glm::vec3(0.0f, 0.0f, 1.0f));
-                model = glm::rotate(model, glm::radians(lightCube.pitch), glm::vec3(1.0f, 0.0f, 0.0f));
-                model = glm::rotate(model, glm::radians(lightCube.yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+                model = glm::rotate(model, glm::radians(lightCube.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
+                model = glm::rotate(model, glm::radians(lightCube.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
+                model = glm::rotate(model, glm::radians(lightCube.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
+                model = glm::scale(model, glm::vec3(lightCube.scale[0], lightCube.scale[1], lightCube.scale[2]));
 
                 glm::mat4 mvp = proj * view * model;
-                lightShader.setUniformMat4f("u_MVP", mvp);
+                lightShader.setUniformMat4f("u_ModelViewProj", mvp);
                 renderer.draw(cubeVao, ib, lightShader); // Render model
             }
 
-
-        
             ImGui_ImplGlfwGL3_NewFrame();
             // IMgui Rendering and input
             {
@@ -308,6 +342,17 @@ int main(int argc, char * argv[])
                 ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
                 ImGui::ColorEdit4("uniform color", (float*)&uniform_color); // Edit 3 floats representing a color
                 ImGui::ColorEdit4("Light color", (float*)&light_color); // Edit 3 floats representing a color
+                // CUBE1 -------------------------------
+                ImGui::SliderFloat3("cube1 Position", texturedCube1.position, -100.0f, 100.0f);
+                ImGui::SliderFloat3("cube1 Roll/Pitch/Yaw", texturedCube1.orientation, -360.0f, 360.0f);
+                ImGui::SliderFloat3("cube1 Scale", texturedCube1.scale, -0.0f, 100.0f);
+                // CUBE2 -------------------------------
+                ImGui::SliderFloat3("cube2 Position", texturedCube2.position, -100.0f, 100.0f);
+                ImGui::SliderFloat3("cube2 Roll/Pitch/Yaw", texturedCube2.orientation, -360.0f, 360.0f);
+                ImGui::SliderFloat3("cube2 Scale", texturedCube2.scale, -0.0f, 100.0f);
+
+
+
                 ImGui::SliderFloat3("Ligth Position", lightCube.position, -100.0f, 100.0f);
                 
 
@@ -342,7 +387,7 @@ int main(int argc, char * argv[])
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
-    static bool toggle = true;
+    static int oldState = GLFW_RELEASE;
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
@@ -354,19 +399,21 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    int newState = glfwGetKey(window, GLFW_KEY_SPACE);
+    if (newState == GLFW_RELEASE && oldState == GLFW_PRESS)
     {
-        if (!toggle)
-        {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            toggle = true;
-        }
-        else
-        {
+        if (enableInput) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            toggle = false;
+            enableInput = false;
         }
+        else {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            enableInput = true;
+        }
+
     }
+    oldState = newState;
+
 
 }
 
@@ -397,7 +444,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     lastX = xpos;
     lastY = ypos;
 
-    camera.ProcessMouseMovement(xoffset, yoffset);
+    if (enableInput)
+        camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
