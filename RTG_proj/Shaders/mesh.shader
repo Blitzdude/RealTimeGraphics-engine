@@ -1,29 +1,83 @@
 #shader vertex
-
 #version 330 core
-layout(location = 0) in vec3 aPos;
-layout(location = 1) in vec3 aNormal;
-layout(location = 2) in vec2 aTexCoords;
 
-out vec2 TexCoords;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec3 normal;
+layout(location = 2) in vec2 texCoord;
+
+out vec2 v_TexCoord;
+out vec3 v_Normal;
+out vec3 v_FragPos;
 
 uniform mat4 u_ModelViewProj;
+uniform mat4 u_Model;
 
 void main()
 {
-    TexCoords = aTexCoords;
-    gl_Position = u_ModelViewProj * vec4(aPos, 1.0);
+    gl_Position = u_ModelViewProj * vec4(position, 1.0);
+    v_FragPos = vec3(u_Model * vec4(position, 1.0f));
+    v_Normal = mat3(transpose(inverse(u_Model))) * normal;
+    v_TexCoord = texCoord;
 }
 
 #shader fragment
 #version 330 core
-out vec4 FragColor;
 
-in vec2 TexCoords;
+struct Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    float shininess;
+};
 
+struct Light {
+    vec3 position;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+uniform Light u_Light;
+uniform Material u_Material;
+
+layout(location = 0) out vec4 FragColor;
+
+in vec3 v_FragPos;
+in vec3 v_Normal;
+in vec2 v_TexCoord;
+
+uniform vec3 u_ViewPos;
 uniform sampler2D texture_diffuse1;
+
+uniform vec3 u_LightColor;
 
 void main()
 {
-    FragColor = texture(texture_diffuse1, TexCoords);
+    // Ambient lighting
+    vec3 ambient = u_LightColor * u_Light.ambient * u_Material.ambient;
+
+    // diffuse lighting
+    vec3 norm = normalize(v_Normal);
+    vec3 lightDir = normalize(u_Light.position - v_FragPos);
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = u_LightColor * u_Light.diffuse * (diff * u_Material.diffuse);
+
+    // specular lighting
+    vec3 viewDir = normalize(u_ViewPos - v_FragPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material.shininess);
+    vec3 specular = u_LightColor * u_Light.specular * (spec * u_Material.specular);
+
+    vec4 result = vec4((ambient + diffuse + specular), 1.0);
+
+    vec4 texColor = texture(texture_diffuse1, v_TexCoord) ;
+    FragColor = result * texColor;
 }
+
+
+
+
+
+
+
