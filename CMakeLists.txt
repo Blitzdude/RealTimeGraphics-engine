@@ -28,6 +28,7 @@ else()
 endif()
 
 include_directories(RTG_proj/Headers/
+					RTG_proj/Headers/tests/
                     RTG_proj/Vendor/assimp/include/
                     RTG_proj/Vendor/bullet/src/
                     RTG_proj/Vendor/glad/include/
@@ -45,6 +46,8 @@ file(GLOB PROJECT_SHADERS RTG_proj/Shaders/*.comp
                           RTG_proj/Shaders/*.geom
                           RTG_proj/Shaders/*.vert
 						  RTG_proj/Shaders/*.shader)
+file(GLOB TEST_FILES      RTG_proj/Sources/tests/*.cpp
+						  RTG_proj/Headers/tests/*.hpp)
 file(GLOB PROJECT_CONFIGS CMakeLists.txt
                           Readme.md
                          .gitattributes
@@ -55,12 +58,13 @@ source_group("Headers" FILES ${PROJECT_HEADERS})
 source_group("Shaders" FILES ${PROJECT_SHADERS})
 source_group("Sources" FILES ${PROJECT_SOURCES})
 source_group("Vendors" FILES ${VENDORS_SOURCES})
+source_group("Tests"   FILES ${TEST_FILES})
 
 add_definitions(-DGLFW_INCLUDE_NONE
                 -DPROJECT_SOURCE_DIR=\"${PROJECT_SOURCE_DIR}\")
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_HEADERS}
                                ${PROJECT_SHADERS} ${PROJECT_CONFIGS}
-                               ${VENDORS_SOURCES})
+                               ${VENDORS_SOURCES} ${TEST_FILES})
 target_link_libraries(${PROJECT_NAME} assimp glfw
                       ${GLFW_LIBRARIES} ${GLAD_LIBRARIES}
                       BulletDynamics BulletCollision LinearMath)

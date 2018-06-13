@@ -16,7 +16,6 @@
 #include "Renderer.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
-#include "Model.hpp"
 // Changes
 
 // System Headers
@@ -32,13 +31,13 @@
 #include <cstdlib>
 #include <cassert>
 
+#include "tests/testClearColor.hpp"
+
 // Method Prototypes 
 // ---------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-//void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-
 
 // Global - camera
 Camera camera(glm::vec3(-200.0f, 0.0f, 00.0f));
@@ -64,7 +63,6 @@ struct Cube
         orientation[0] = op;
         orientation[1] = or;
         orientation[2] = oy;
-
 
         scale[0] = sx;
         scale[1] = sy;
@@ -98,19 +96,12 @@ int main(int argc, char * argv[])
     ImVec4 light_color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
     float lightIntensity = 1.0f;
 
-
     // Create and initialize the light
     Light light;
     light.color   = { 1.0f, 1.0f, 1.0f, 1.0f };
     light.ambient = glm::vec3(0.2f, 0.20f, 0.20f );
     light.diffuse = glm::vec3(0.50f, 0.50f, 0.50f );
     light.specular = glm::vec3( 0.50f, 0.50f, 0.50f );
-
-    //float model_position[3] = { 0.0f, 0.0f, 0.0f };
-    //float model_scale = 50.0f;
-    //float model_roll = 0.0f;
-    //float model_pitch = 0.0f;
-    //float model_yaw = 0.0f;
 
     // Load GLFW and Create a Window
     if (!glfwInit())
@@ -163,19 +154,6 @@ int main(int argc, char * argv[])
         // Scope to make sure all buffers get destroyed before
         // glfwTerminate is called. Otherwise GLbuffers wouldn't be destroyed 
         // after glfwTermination
-
-        // Create material container
-        std::vector<Material> materials;
-        materials.push_back({ "Gold",   { 0.24725f, 0.1995f, 0.0745f }, { 0.75164f, 0.60648f, 0.22648f }, { 0.628281f, 0.555802f, 0.366065f }, 0.4f * 128 });
-        materials.push_back({ "Silver", { 0.19225f, 0.19225f, 0.19225f },{ 0.50754f, 0.50754f, 0.50754f },{ 0.508273f, 0.508273f, 0.508273f }, 0.4f * 128 });
-        materials.push_back({"Bronze"  ,{ 0.2125f, 0.1275f, 0.054f },{ 0.714f, 0.4284f, 0.18144f },{ 0.393548f, 0.271906f, 0.166721f }, 0.2f * 128 });
-        materials.push_back({ "Brass"   ,{ 0.24725f, 0.1995f, 0.0745f },{ 0.75164f, 0.60648f, 0.22648f },{ 0.628281f, 0.555802f, 0.366065f }, 0.21794872f * 128 });
-        materials.push_back({"Copper"        ,{ 0.01f, 0.01f, 0.01f },{ 0.7038f, 0.27048f, 0.0828f },{ 0.256777f, 0.137622f, 0.086014f }, 0.1f * 128});
-        materials.push_back({"Black_Plastic" ,{ 0.01f, 0.01f, 0.01f },{ 0.01f, 0.01f, 0.0f },{ 0.5f, 0.5f, 0.5f }, 0.25f * 128 });
-        materials.push_back({"Cyan_Plastic" ,{ 0.01f, 0.1f, 0.06f },{ 0.0f, 0.50980392f, 0.50980392f },{ 0.50196078f, 0.50196078f, 0.50196078f }, 0.25f * 128 });
-        materials.push_back({"Green_Plastic",{ 0.01f, 0.01f, 0.01f },{ 0.1f, 0.35f, 0.1f },{ 0.45f, 0.55f, 0.45f }, 0.25f * 128 });
-        materials.push_back({"White_Plastic",{ 0.01f, 0.01f, 0.01f },{ 0.55f, 0.55f, 0.55f },{ 0.7f, 0.7f, 0.7f }, 0.25f * 128 });
-        materials.push_back({"Black_Rubber"  ,{ 0.02f, 0.02f, 0.02f },{ 0.01f, 0.01f, 0.01f },{ 0.4f, 0.4f, 0.4f }, 0.078125f * 128 });
 
         // Cube vertex initialization
         float vertices[] = {
@@ -234,21 +212,13 @@ int main(int argc, char * argv[])
             22, 23, 20
         };
 
-        // Load Models and init cubes
-        // -----------------------------------
-        Shader meshShader("Shaders/mesh.shader");
-        Model treasure("Resources/Models/TreasureChest/treasure_chest.obj");
-
         // Create shaders
         // --------------------------------
         Shader basicShader("Shaders/basic.shader");
-        Shader lightShader("Shaders/light.shader");
 
         // Load Textures
         // ---------------------------------
         Texture texture("Resources/test.png");
-        Texture blank("Resources/blank.png");
-        Texture treasureDiff("Resources/Models/TreasureChest/Treasurechest_DIFF.png");
 
         // Init Cube values
         // ----------------------------------
@@ -282,182 +252,35 @@ int main(int argc, char * argv[])
         texture.unbind();
         ib.unbind();
         basicShader.unbind();
-        meshShader.unbind();
 
         // Create Renderer
         // ---------------------------
         Renderer renderer;
 
+        test::TestClearColor test;
+
         while (glfwWindowShouldClose(mWindow) == false)
         {
+            renderer.clear();
+
             // Per frame time logic
             // ----------------------------
             float currentFrame = glfwGetTime();
             deltaTime = currentFrame - lastFrame;
             lastFrame = currentFrame;
 
+            test.OnUpdate(deltaTime);
+            test.OnRender();
+
             // input
             // -----------------------------------
             processInput(mWindow);
 
-            // projection and view matrix
-            // -----------------------------------
-            glm::mat4 proj = glm::perspective(glm::radians(camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 1.f, 10000.0f);
-            glm::mat4 view = camera.GetViewMatrix();
-
-            // Draw logic begin
-            // -----------------------------------
-            renderer.setClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-            renderer.clear();
-
-            // Render treasure models
-            // ---------------------------
-            meshShader.bind();
-            treasureDiff.bind();
-            for (int i = 0; i < materials.size(); i++)
-            {
-                // Texture uniform
-                meshShader.SetUniform1i("texture_diffuse1", 0);
-                // Material uniforms
-                meshShader.SetUniform3f("u_Material.ambient", materials[i].ambient[0], materials[i].ambient[1], materials[i].ambient[2]);
-                meshShader.SetUniform3f("u_Material.diffuse", materials[i].diffuse[0], materials[i].diffuse[1], materials[i].diffuse[2]);
-                meshShader.SetUniform3f("u_Material.specular", materials[i].specular[0], materials[i].specular[1], materials[i].specular[2]);
-                meshShader.SetUniform1f("u_Material.shininess", materials[i].shininess);
-                // Light uniforms
-                meshShader.SetUniform3f("u_ViewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-                meshShader.SetUniform3f("u_LightColor", light_color.x, light_color.y, light_color.z);
-                meshShader.SetUniform3f("u_Light.position", lightCube.position[0], lightCube.position[1], lightCube.position[2]);
-                meshShader.SetUniform3f("u_Light.ambient", lightIntensity *light.ambient.x, lightIntensity *light.ambient.y, lightIntensity * light.ambient.z);
-                meshShader.SetUniform3f("u_Light.diffuse", light.diffuse.x, light.diffuse.y, light.diffuse.z);
-                meshShader.SetUniform3f("u_Light.specular", light.specular.x, light.specular.y, light.specular.z);
-                // mvp matrix
-                glm::mat4 model(1.0f);
-                model = glm::translate(model, glm::vec3(0.0f, 0.0f, (40.0f * i) - 200.0f));
-                model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
-                model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-                glm::mat4 mvp = proj * view * model;
-                // model uniforms
-                meshShader.setUniformMat4f("u_ModelViewProj", mvp);
-                meshShader.setUniformMat4f("u_Model", model);
-                // draw
-                treasure.Draw(meshShader);
-            }
-             meshShader.unbind();
-            
-            // Render textured cube1
-            // ------------------------
-            
-            {
-            basicShader.bind();
-            // update uniforms
-            basicShader.SetUniform1i("u_Texture", 0);
-            basicShader.SetUniform4f("u_Color", 1.0f, 1.0f, 1.0f, 1.0f);
-
-            basicShader.SetUniform3f("u_Material.ambient", 0.20f, 0.2f, 0.2f);
-            basicShader.SetUniform3f("u_Material.diffuse", 1.0f, 1.0f, 1.0f);
-            basicShader.SetUniform3f("u_Material.specular", 0.5f, 0.5f, 0.5f);
-            basicShader.SetUniform1f("u_Material.shininess", 32.0f);
-
-            basicShader.SetUniform3f("u_ViewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-            basicShader.SetUniform3f("u_Light.position", lightCube.position[0], lightCube.position[1], lightCube.position[2]);
-            basicShader.SetUniform3f("u_Light.ambient", lightIntensity *light.ambient.x, lightIntensity *light.ambient.y, lightIntensity * light.ambient.z);
-            basicShader.SetUniform3f("u_Light.diffuse", light.diffuse.x, light.diffuse.y, light.diffuse.z);
-            basicShader.SetUniform3f("u_Light.specular", light.specular.x, light.specular.y, light.specular.z);
-
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(texturedCube1.position[0], texturedCube1.position[1], texturedCube1.position[2]));
-            model = glm::rotate(model, glm::radians(texturedCube1.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
-            model = glm::rotate(model, glm::radians(texturedCube1.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(texturedCube1.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::scale(model, glm::vec3(texturedCube1.scale[0], texturedCube1.scale[1], texturedCube1.scale[2]));
-
-            glm::mat4 mvp = proj * view * model;
-            texture.bind();
-            basicShader.setUniformMat4f("u_ModelViewProj", mvp);
-            basicShader.setUniformMat4f("u_Model", model);
-            renderer.draw(cubeVao, ib, basicShader); // Render model
-            texture.unbind();
-            }
-            
-            // Render textured cube2
-            // ------------------------
-            
-            {
-                 // update uniforms
-                 blank.bind(0);
-                 basicShader.SetUniform1i("u_Texture", 0);
-                 basicShader.SetUniform4f("u_Color", 1.0f, 1.0f, 1.0f, 1.0f);
-
-                 basicShader.SetUniform3f("u_Material.ambient", materials[8].ambient[0], materials[8].ambient[1], materials[8].ambient[2]);
-                 basicShader.SetUniform3f("u_Material.diffuse", materials[8].diffuse[0], materials[8].diffuse[1], materials[8].diffuse[2]);
-                 basicShader.SetUniform3f("u_Material.specular", materials[8].specular[0], materials[8].specular[1], materials[8].specular[2]);
-                 basicShader.SetUniform1f("u_Material.shininess", materials[8].shininess);
-
-                 basicShader.SetUniform3f("u_ViewPos", camera.Position.x, camera.Position.y, camera.Position.z);
-                 basicShader.SetUniform3f("u_LightColor", light_color.x, light_color.y, light_color.z);
-                 basicShader.SetUniform3f("u_Light.position", lightCube.position[0], lightCube.position[1], lightCube.position[2]);
-                 basicShader.SetUniform3f("u_Light.ambient", lightIntensity *light.ambient.x, lightIntensity *light.ambient.y, lightIntensity * light.ambient.z);
-                 basicShader.SetUniform3f("u_Light.diffuse", light.diffuse.x, light.diffuse.y, light.diffuse.z);
-                 basicShader.SetUniform3f("u_Light.specular", light.specular.x, light.specular.y, light.specular.z);
-
-                 glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(texturedCube2.position[0], texturedCube2.position[1], texturedCube2.position[2]));
-                 model = glm::rotate(model, glm::radians(texturedCube2.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
-                 model = glm::rotate(model, glm::radians(texturedCube2.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
-                 model = glm::rotate(model, glm::radians(texturedCube2.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
-                 model = glm::scale(model, glm::vec3(texturedCube2.scale[0], texturedCube2.scale[1], texturedCube2.scale[2]));
-
-                 glm::mat4 mvp = proj * view * model;
-                
-                 basicShader.setUniformMat4f("u_ModelViewProj", mvp);
-                 basicShader.setUniformMat4f("u_Model", model);
-                 renderer.draw(cubeVao, ib, basicShader); // Render model
-                 blank.unbind();
-                 basicShader.unbind();
-                 }
-                 
-            // Render light cube
-            // ------------------------     
-            {
-                lightShader.bind();
-                // update uniforms
-                lightShader.SetUniform4f("u_Color", light_color.x, light_color.y, light_color.z, light_color.w);
-
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(lightCube.position[0], lightCube.position[1], lightCube.position[2]));
-                model = glm::rotate(model, glm::radians(lightCube.orientation[0]), glm::vec3(0.0f, 0.0f, 1.0f));
-                model = glm::rotate(model, glm::radians(lightCube.orientation[1]), glm::vec3(1.0f, 0.0f, 0.0f));
-                model = glm::rotate(model, glm::radians(lightCube.orientation[2]), glm::vec3(0.0f, 1.0f, 0.0f));
-                model = glm::scale(model, glm::vec3(lightCube.scale[0], lightCube.scale[1], lightCube.scale[2]));
-
-                glm::mat4 mvp = proj * view * model;
-                lightShader.setUniformMat4f("u_ModelViewProj", mvp);
-                renderer.draw(cubeVao, ib, lightShader); // Render model
-                lightShader.unbind();
-            }
-            
             // IMgui Rendering and input
             ImGui_ImplGlfwGL3_NewFrame();
             {
-                ImGui::Text("Debug");  // Display some text (you can use a format string too)
-
-                ImGui::ColorEdit3("clear color", (float*)&clear_color);         // Edit 3 floats representing a color
-                ImGui::ColorEdit4("Light color", (float*)&light_color);          // Edit 3 floats representing a color
-                ImGui::SliderFloat3("Ligth Position", lightCube.position, -200.0f, 200.0f);
-                ImGui::SliderFloat3("Ligth Ambient", (float*)&light.ambient, 0.0f, 1.0f);
-                ImGui::SliderFloat3("Ligth Diffuse", (float*)&light.diffuse, 0.0f, 1.0f);
-                ImGui::SliderFloat3("Ligth Specular", (float*)&light.specular, 0.0f, 1.0f);
-                ImGui::SliderFloat("Light intensity", &lightIntensity, 0.1f, 100.0f);
-
-                 // CUBE1 -------------------------------
-                ImGui::SliderFloat3("cube1 Position", texturedCube1.position, -200.0f, 200.0f);
-                ImGui::SliderFloat3("cube1 Roll/Pitch/Yaw", texturedCube1.orientation, -360.0f, 360.0f);
-                ImGui::SliderFloat3("cube1 Scale", texturedCube1.scale, 0.0f, 100.0f);
-                
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-                ImGui::Text("RealTimeGraphics-Course Demo by Joel Känsälä:");
-                ImGui::Text("WASD to move");
-                ImGui::Text("Mouse to Rotate camera");
-                ImGui::Text("Space to Toggle Mouse");
-                ImGui::Text("Esc to quit");
-
+             
+                test.OnImGuiRender();
                 // Render with imgui
                 ImGui::Render();
                 ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
@@ -537,12 +360,3 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     if (enableInput)
         camera.ProcessMouseMovement(xoffset, yoffset);
 }
-
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
-/*
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.ProcessMouseScroll(yoffset);
-}
-*/
