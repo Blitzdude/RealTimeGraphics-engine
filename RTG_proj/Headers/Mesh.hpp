@@ -57,7 +57,6 @@ public:
 private:
     /*  Render data  */
 
-
     unsigned int VBO;
     unsigned int EBO;
 
