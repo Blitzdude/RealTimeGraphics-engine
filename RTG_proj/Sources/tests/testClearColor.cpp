@@ -6,6 +6,11 @@ namespace test {
 TestClearColor::TestClearColor()
     : m_clearColor {0.2f, 0.3f, 0.8f, 1.0f}
 {
+	// Enable GL blend functions
+
+	// Create Renderer
+
+	// Create Imgui Context
 }
 TestClearColor::~TestClearColor()
 {

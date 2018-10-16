@@ -87,27 +87,25 @@ TestMaterialAndLighting::TestMaterialAndLighting()
 	m_light.specular = glm::vec3(0.50f, 0.50f, 0.50f);
 
 	// populate Materials container
-	m_materials.push_back({ "Gold",   { 0.24725f, 0.1995f, 0.0745f }, { 0.75164f, 0.60648f, 0.22648f }, { 0.628281f, 0.555802f, 0.366065f }, 0.4f * 128 });
-	m_materials.push_back({ "Silver", { 0.19225f, 0.19225f, 0.19225f },{ 0.50754f, 0.50754f, 0.50754f },{ 0.508273f, 0.508273f, 0.508273f }, 0.4f * 128 });
-	m_materials.push_back({ "Bronze"  ,{ 0.2125f, 0.1275f, 0.054f },{ 0.714f, 0.4284f, 0.18144f },{ 0.393548f, 0.271906f, 0.166721f }, 0.2f * 128 });
-	m_materials.push_back({ "Brass"   ,{ 0.24725f, 0.1995f, 0.0745f },{ 0.75164f, 0.60648f, 0.22648f },{ 0.628281f, 0.555802f, 0.366065f }, 0.21794872f * 128 });
-	m_materials.push_back({ "Copper"        ,{ 0.01f, 0.01f, 0.01f },{ 0.7038f, 0.27048f, 0.0828f },{ 0.256777f, 0.137622f, 0.086014f }, 0.1f * 128 });
+	m_materials.push_back({ "Gold"   ,{ 0.24725f, 0.1995f, 0.0745f }, { 0.75164f, 0.60648f, 0.22648f }, { 0.628281f, 0.555802f, 0.366065f }, 0.4f * 128 });
+	m_materials.push_back({ "Silver" ,{ 0.19225f, 0.19225f, 0.19225f },{ 0.50754f, 0.50754f, 0.50754f },{ 0.508273f, 0.508273f, 0.508273f }, 0.4f * 128 });
+	m_materials.push_back({ "Bronze" ,{ 0.2125f, 0.1275f, 0.054f },{ 0.714f, 0.4284f, 0.18144f },{ 0.393548f, 0.271906f, 0.166721f }, 0.2f * 128 });
+	m_materials.push_back({ "Brass"  ,{ 0.24725f, 0.1995f, 0.0745f },{ 0.75164f, 0.60648f, 0.22648f },{ 0.628281f, 0.555802f, 0.366065f }, 0.21794872f * 128 });
+	m_materials.push_back({ "Copper" ,{ 0.01f, 0.01f, 0.01f },{ 0.7038f, 0.27048f, 0.0828f },{ 0.256777f, 0.137622f, 0.086014f }, 0.1f * 128 });
 	m_materials.push_back({ "Black_Plastic" ,{ 0.01f, 0.01f, 0.01f },{ 0.01f, 0.01f, 0.0f },{ 0.5f, 0.5f, 0.5f }, 0.25f * 128 });
-	m_materials.push_back({ "Cyan_Plastic" ,{ 0.01f, 0.1f, 0.06f },{ 0.0f, 0.50980392f, 0.50980392f },{ 0.50196078f, 0.50196078f, 0.50196078f }, 0.25f * 128 });
-	m_materials.push_back({ "Green_Plastic",{ 0.01f, 0.01f, 0.01f },{ 0.1f, 0.35f, 0.1f },{ 0.45f, 0.55f, 0.45f }, 0.25f * 128 });
-	m_materials.push_back({ "White_Plastic",{ 0.01f, 0.01f, 0.01f },{ 0.55f, 0.55f, 0.55f },{ 0.7f, 0.7f, 0.7f }, 0.25f * 128 });
+	m_materials.push_back({ "Cyan_Plastic"  ,{ 0.01f, 0.1f, 0.06f },{ 0.0f, 0.50980392f, 0.50980392f },{ 0.50196078f, 0.50196078f, 0.50196078f }, 0.25f * 128 });
+	m_materials.push_back({ "Green_Plastic" ,{ 0.01f, 0.01f, 0.01f },{ 0.1f, 0.35f, 0.1f },{ 0.45f, 0.55f, 0.45f }, 0.25f * 128 });
+	m_materials.push_back({ "White_Plastic" ,{ 0.01f, 0.01f, 0.01f },{ 0.55f, 0.55f, 0.55f },{ 0.7f, 0.7f, 0.7f }, 0.25f * 128 });
 	m_materials.push_back({ "Black_Rubber"  ,{ 0.02f, 0.02f, 0.02f },{ 0.01f, 0.01f, 0.01f },{ 0.4f, 0.4f, 0.4f }, 0.078125f * 128 });
 
 
 	// Enable GL parameteres
-	   // ---------------------------------
+	// ---------------------------------
 	GLCall(glEnable(GL_BLEND));
 	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 	GLCall(glEnable(GL_DEPTH_TEST));
-
 	// Load Models and Init cubes
-
 
 	// Init cube vertexArrayObject
 	// -------------------------------
@@ -291,7 +289,7 @@ void TestMaterialAndLighting::OnImGuiRender()
 	ImGui::SliderFloat3("cube1 Scale", m_texturedCube1.scale, 0.0f, 100.0f);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	ImGui::Text("RealTimeGraphics-Course Demo by Joel Känsälä:");
+	ImGui::Text("RealTimeGraphics-Course Demo by Joel Känsälä");
 	ImGui::Text("WASD to move");
 	ImGui::Text("Mouse to Rotate camera");
 	ImGui::Text("Space to Toggle Mouse");

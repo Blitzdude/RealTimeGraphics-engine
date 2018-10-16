@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\RTG_proj",
+    "\\RTG_proj\\Headers",
+    "\\RTG_proj\\Headers\\tests",
+    "\\RTG_proj\\Sources",
+    "\\RTG_proj\\Sources\\tests"
   ],
-  "SelectedNode": "\\Samples",
+  "SelectedNode": "\\RTG_proj\\Sources\\Renderer.cpp",
   "PreviewInSolutionExplorer": true
 }

@@ -11,7 +11,6 @@ Renderer::~Renderer()
 void Renderer::setClearColor(float r, float g, float b, float a)
 {
     GLCall(glClearColor(r, g, b, a));
-
 }
 
 void Renderer::clear() const

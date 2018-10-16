@@ -16,7 +16,6 @@
 #include "Renderer.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
-// Changes
 
 // System Headers
 #include <GLFW/glfw3.h>
@@ -32,6 +31,7 @@
 #include <cassert>
 
 // Tests
+#include "tests/test.hpp"
 #include "tests/testClearColor.hpp"
 #include "tests/testMaterialAndLighting.hpp"
 
@@ -41,7 +41,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 // Globals
-test::Test* currentTest;
+test::Test* currentTest = nullptr;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -80,64 +80,73 @@ int main(int argc, char * argv[])
     glfwMakeContextCurrent(mWindow);
 	
     gladLoadGL();
-    // set up input callbacks
-
-
     fprintf(stderr, "OpenGL %s\n", glGetString(GL_VERSION) );
-
-    // tell GLFW to capture our mouse
-
-    // Create imgui context
-    ImGui::CreateContext();
-    ImGui_ImplGlfwGL3_Init(mWindow, true);
-
-
-    {
-        // Scope to make sure all buffers get destroyed before
-        // glfwTerminate is called. Otherwise GLbuffers wouldn't be destroyed 
-        // after glfwTermination
-
-        // Create Renderer
-        // ---------------------------
-        //Renderer renderer;
-
-        //test::TestClearColor test;
-		test::TestMaterialAndLighting test;
-
-		currentTest = &test;
+	{
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+		// Scope to make sure all buffers get destroyed before
+		// glfwTerminate is called. Otherwise GLbuffers wouldn't be destroyed 
+		// after glfwTermination
+	 
+		// Create Renderer
+		Renderer renderer;
+		
+		// Create imgui context
+		ImGui::CreateContext();
+		ImGui_ImplGlfwGL3_Init(mWindow, true);
+		ImGui::StyleColorsDark();
+		
+		test::TestMenu* testMenu = new test::TestMenu(currentTest);
+		currentTest = testMenu;
+		/// TODO: Command line arguments to go to certain test
+		testMenu->RegisterTest<test::TestClearColor>("Clear Color Test");
+		
 		glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);
 		glfwSetCursorPosCallback(mWindow, mouse_callback);
-		glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		
+		while (glfwWindowShouldClose(mWindow) == false)
+		{
+			// No renderer created, so no clearing going on FIXME!!!!
+			// Per frame time logic
+			// ----------------------------
+			float currentFrame = glfwGetTime();
+			deltaTime = currentFrame - lastFrame;
+			lastFrame = currentFrame;
+
+			renderer.setClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			renderer.clear();
+			
+			ImGui_ImplGlfwGL3_NewFrame();
+			if (currentTest)
+			{
+				currentTest->OnUpdate(deltaTime);
+				currentTest->OnRender();
+				ImGui::Begin("Testing");
+				if (currentTest != testMenu && ImGui::Button("Back"))
+				{
+					delete currentTest;
+					currentTest = testMenu;
+				}
+				currentTest->OnImGuiRender();
+				ImGui::End();
+			}
+
+		  // Render with imgui
+		  ImGui::Render();
+		  ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+
+	      // Flip Buffers and Draw
+	      glfwSwapBuffers(mWindow);
+	      glfwPollEvents();
+		}
 
 
-        while (glfwWindowShouldClose(mWindow) == false)
-        {
-
-            // Per frame time logic
-            // ----------------------------
-            float currentFrame = glfwGetTime();
-            deltaTime = currentFrame - lastFrame;
-            lastFrame = currentFrame;
-
-            test.OnUpdate(deltaTime);
-			test.processInput(mWindow);
-            test.OnRender();
-
-            // input
-            // -----------------------------------
-
-            // IMgui Rendering and input
-            ImGui_ImplGlfwGL3_NewFrame();
-            {
-                test.OnImGuiRender();
-            }
-            
-            // Flip Buffers and Draw
-            glfwSwapBuffers(mWindow);
-            glfwPollEvents();
-        }
-    }
     // Cleanup
+	delete currentTest;
+	if (currentTest != testMenu)
+		delete testMenu;
+	}
 
     glfwTerminate();
 
