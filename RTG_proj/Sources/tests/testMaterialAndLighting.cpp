@@ -141,6 +141,8 @@ void TestMaterialAndLighting::OnUpdate(float deltaTime)
 	// -----------------------------------
 	proj = glm::perspective(glm::radians(m_camera.Zoom), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 1.f, 10000.0f);
 	view = m_camera.GetViewMatrix();
+
+
 }
 
 void TestMaterialAndLighting::OnRender()
@@ -295,14 +297,11 @@ void TestMaterialAndLighting::OnImGuiRender()
 	ImGui::Text("Space to Toggle Mouse");
 	ImGui::Text("Esc to quit");
 
-	// Render with imgui
-	ImGui::Render();
-	ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void TestMaterialAndLighting::processInput(GLFWwindow *window)
+void TestMaterialAndLighting::KeyboardInput(GLFWwindow *window)
 {
 	static int oldState = GLFW_RELEASE;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)

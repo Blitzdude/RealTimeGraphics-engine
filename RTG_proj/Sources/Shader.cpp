@@ -170,7 +170,7 @@ void Shader::createShaderProgram()
     if(status == GL_FALSE)
     {
         std::cout << "Program not valid" << std::endl;
-        //glDeleteProgram(program);
+        GLCall(glDeleteProgram(program));
     }
     m_programId = program;
     GLCall(glDeleteShader(vs));

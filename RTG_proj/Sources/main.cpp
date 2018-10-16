@@ -34,6 +34,7 @@
 #include "tests/test.hpp"
 #include "tests/testClearColor.hpp"
 #include "tests/testMaterialAndLighting.hpp"
+#include "tests/testTexture2D.hpp"
 
 // Method Prototypes 
 // ---------------------------------
@@ -100,6 +101,9 @@ int main(int argc, char * argv[])
 		currentTest = testMenu;
 		/// TODO: Command line arguments to go to certain test
 		testMenu->RegisterTest<test::TestClearColor>("Clear Color Test");
+		testMenu->RegisterTest<test::TestTexture2D>("Texture2D test");
+		testMenu->RegisterTest<test::TestMaterialAndLighting>("Materials and Lighting test");
+
 		
 		glfwSetFramebufferSizeCallback(mWindow, framebuffer_size_callback);
 		glfwSetCursorPosCallback(mWindow, mouse_callback);
@@ -121,6 +125,7 @@ int main(int argc, char * argv[])
 			if (currentTest)
 			{
 				currentTest->OnUpdate(deltaTime);
+				currentTest->KeyboardInput(mWindow);
 				currentTest->OnRender();
 				ImGui::Begin("Testing");
 				if (currentTest != testMenu && ImGui::Button("Back"))

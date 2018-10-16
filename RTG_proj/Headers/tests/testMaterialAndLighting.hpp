@@ -67,9 +67,8 @@ public:
 	void OnRender() override;
 	void OnImGuiRender() override;
 	void MouseInput(double xpos, double ypos) override;
+	void KeyboardInput(GLFWwindow *window);
 	
-	// Callbacks for glfw
-	void processInput(GLFWwindow *window);
 	Camera m_camera;
 	
 private:

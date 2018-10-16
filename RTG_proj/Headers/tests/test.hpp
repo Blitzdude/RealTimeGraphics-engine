@@ -1,6 +1,7 @@
 #pragma once
 #include <functional> // for std::function
 #include <vector>
+#include "GLFW/glfw3.h"
 
 namespace test {
 
@@ -13,6 +14,7 @@ class Test
 	virtual void OnUpdate(float deltaTime) {}
 	virtual void OnRender() {}
 	virtual void OnImGuiRender() {}
+	virtual void KeyboardInput(GLFWwindow* window) {}
 	virtual void MouseInput(double xpos, double ypos) {}
 
 };
